@@ -1,0 +1,60 @@
+= rink
+
+Makes interactive consoles awesome. More specifically, it does this by automating as much as conceivably possible so
+that you can get right down to what you really care about: your application.
+
+After the second copy-and-paste of an interactive console that I'd written for a few of my various gems, I decided to
+extract that code into a plug-and-play-friendly console gem. This library is the result.
+
+== Examples
+
+To create a new interactive console:
+
+  require 'rink'
+  Rink::Console.new
+
+The above example creates a console, but it doesn't add much in the way of usefulness. To really get started on your
+application-specific interactive console, extend the Rink::Console class:
+
+  class MyConsole < Rink::Console
+    # ...
+  end
+
+  #...
+  MyConsole.new
+
+== Testing
+
+Testing your console turns out to be really easy, since the Rink::Console initializer takes some optional arguments to
+override the input and output streams. To can the set of input, for instance, just use:
+
+  input_string = "help"
+  MyConsole.new(:input => input_string)
+
+You'll see the output of the above dumped to STDOUT. If you want to capture that output, the answer is pretty obvious:
+
+  output_string = ""
+  MyConsole.new(:input => input_string, :output => output_string)
+  #=> output_string now contains the contents of the result of running the commands found inside of input_string.
+
+You can also pass IO objects in directly:
+
+  File.open("commands.txt", "r") do |cmd_file|
+    File.open("output.log", "w") do |log_file|
+      MyConsole.new(:input => cmd_file, :output => log_file)
+    end
+  end
+
+== Note on Patches/Pull Requests
+ 
+* Fork the project.
+* Make your feature addition or bug fix.
+* Add tests for it. This is important so I don't break it in a
+  future version unintentionally.
+* Commit, do not mess with rakefile, version, or history.
+  (if you want to have your own version, that is fine but bump version in a commit by itself I can ignore when I pull)
+* Send me a pull request. Bonus points for topic branches.
+
+== Copyright
+
+Copyright (c) 2010 Colin MacKenzie IV. See LICENSE for details.
