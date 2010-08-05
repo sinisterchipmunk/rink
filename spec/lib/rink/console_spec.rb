@@ -43,7 +43,7 @@ describe Rink::Console do
   it "should ignore blank lines" do
     console("\n")
     prompt = Regexp::escape(subject.send(:prompt))
-    @output.should =~ /^#{prompt}#{prompt}$/
+    @output.should =~ /^#{prompt}[\n\r]+#{prompt}$/
   end
 
   it "should allow setting namespace" do

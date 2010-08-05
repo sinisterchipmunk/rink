@@ -1,45 +1,23 @@
 module Rink
   class Console
-    attr_reader :input, :output
+    extend Rink::Delegation
+    attr_reader :line_processor
     attr_writer :namespace, :silenced
+    attr_reader :input, :output
+    delegate :silenced?, :print, :write, :puts, :to => :output, :allow_nil => true
     
     def initialize(options = {})
       options = default_options.merge(options)
       apply_options(options)
-      run(options.delete(:input), options)
+      run(options)
     end
-
-    def silenced?
-      @silenced
-    end
-
+    
     def namespace
       @namespace ||= Object.new
     end
 
     def banner
       self.class.banner
-    end
-
-    def default_options
-      self.class.default_options
-    end
-
-    def init_stream(stream_or_string)
-      stream_or_string.kind_of?(String) ? StringIO.new(stream_or_string) : stream_or_string
-    end
-
-    def write(*args)
-      return if silenced?
-      args = args.flatten.join
-      output.respond_to?(:print) ? output.print(args) : output.write(args)
-    end
-
-    alias print write
-
-    def puts(*args)
-      print args.join("\n")
-      print "\n"
     end
 
     # Runs a series of commands in the context of this Console. Input can be either a string
@@ -51,31 +29,50 @@ module Rink
     #   :namespace => any object (other than nil). Will be used as the default namespace.
     #
     def run(input, options = {})
-      temporary_options(options.merge(:input => input)) do
+      if input.kind_of?(Hash)
+        options = options.merge(input)
+      else
+        options.merge! :input => input
+      end
+      
+      temporary_options(options) do
         puts banner if options.key?(:banner) ? options[:banner] : default_options[:banner]
         enter_input_loop
       end
     end
 
     def temporary_options(options)
-      old_input, old_output, old_silence, old_namespace = @input, @output, @silenced, @namespace
+      old_options = gather_options
       apply_options(options)
       yield
     ensure
-      @input = old_input unless old_input.nil?
-      @output = old_output unless old_output.nil?
-      @silenced = old_silence unless old_silence.nil?
-      @namespace = old_namespace unless old_namespace.nil?
+      apply_options(old_options)
     end
 
     def apply_options(options)
-      @input  = init_stream(options[:input] || @input)
-      @output = init_stream(options[:output] || @output)
-      @silenced = options.key?(:silent) ? options[:silent] : @silenced
+      return unless options
+      @_options = options
+      @input  = setup_input_method(options[:input] || @input)
+      @output = setup_output_method(options[:output] || @output)
+      @output.silenced = options.key?(:silent) ? options[:silent] : !@output || @output.silenced?
       @namespace = options[:namespace] unless options[:namespace].nil?
+      @line_processor = options.delete(:processor) || options.delete(:line_processor) || @line_processor
+      
+      if @input
+        @input.output = @output
+        @input.prompt = prompt
+        if @input.respond_to?(:completion_proc)
+          @input.completion_proc = proc { |line| autocomplete(line) }
+        end
+      end
+    end
+    
+    def gather_options
+      @_options
     end
 
     class << self
+      # Sets or returns the banner displayed when the console is started.
       def banner(msg = nil)
         if msg.nil?
           @banner ||= ">> Interactive Console <<"
@@ -84,36 +81,73 @@ module Rink
         end
       end
 
+      # Default options are:
+      #  :output => STDOUT,
+      #  :input  => STDIN,
+      #  :banner => true,
+      #  :silent => false,
+      #  :processor => Rink::LineProcessor::PureRuby.new(self)
       def default_options
-      {
-        :input  => STDIN,
-        :output => STDOUT,
-        :banner => true,
-        :silent => false
-      }
+        {
+          :output => STDOUT,
+          :input  => STDIN,
+          :banner => true,
+          :silent => false,
+          :processor => Rink::LineProcessor::PureRuby.new(self)
+        }
       end
     end
 
   protected
+    def default_options
+      @default_options ||= self.class.default_options
+    end
+
+    # The prompt that is displayed next to the cursor.
     def prompt
       "#{self.class.name} > "
     end
-
-    def handle_line(cmd)
+    
+    # Executes the given command, which is a String, and returns a String to be
+    # printed to @output.
+    def process_command(cmd)
       result = eval(cmd, namespace.send(:binding), self.class.name)
-      puts "  => #{result.inspect}"
-    rescue
-      print $!.class.name, ": ", $!.message
-      puts $!.backtrace
+      "  => #{result.inspect}"
     end
 
-  private
+    # Sends the command to #process_command and prints the result to @output.
+    #
+    # If an error occurs, the error and a backtrace are printed instead.
+    def handle_input(cmd)
+      puts process_command(cmd)
+    rescue
+      print $!.class.name, ": ", $!.message, "\n"
+      print "\t", $!.backtrace.join("\n\t"), "\n"
+    end
+    
+
+  private    
+    include Rink::IOMethods
+
     def enter_input_loop
-      print prompt
-      while !input.closed? && inln = input.gets
+      while inln = @input.gets
         inln.strip!
-        handle_line(inln) unless inln.length == 0
-        print prompt
+        handle_input(inln) unless inln.length == 0
+      end
+    end
+    
+    def autocomplete(line)
+      return [] unless @line_processor
+      result = @line_processor.autocomplete(line, namespace)
+      case result
+        when String
+          [result]
+        when nil
+          []
+        when Array
+          result
+        else
+          result.to_a
       end
     end
   end
