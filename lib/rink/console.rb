@@ -80,6 +80,15 @@ module Rink
           @banner = msg
         end
       end
+      
+      # Sets or returns the prompt for this console.
+      def prompt(msg = nil)
+        if msg.nil?
+          @prompt ||= "#{self.class.name} > "
+        else
+          @prompt = msg
+        end
+      end
 
       # Default options are:
       #  :output => STDOUT,
@@ -105,7 +114,7 @@ module Rink
 
     # The prompt that is displayed next to the cursor.
     def prompt
-      "#{self.class.name} > "
+      self.class.prompt
     end
     
     # Executes the given command, which is a String, and returns a String to be
