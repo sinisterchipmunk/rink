@@ -22,6 +22,33 @@ application-specific interactive console, extend the Rink::Console class:
 
   #...
   MyConsole.new
+  
+By default, Rink will execute code within the context of its #namespace (see the Rink::Console class documentation for
+details). You can, however, add specific commands to Rink like so:
+
+  class MyConsole < Rink::Console
+    command :help do |args|
+      if args.length == 0
+        "What do you need help with?"
+      else
+        "Sorry, I don't know anything about #{args.inspect}."
+      end
+    end
+  end
+  
+  MyConsole.new
+  
+  # produces...
+  
+  >> Interactive Console <<
+  
+  MyConsole > help
+  What do you need help with?
+  
+  MyConsole > help feed the poor
+  Sorry, I don't know anything about ["feed", "the", "poor"]
+  
+  MyConsole > 
 
 == Testing
 
@@ -44,6 +71,13 @@ You can also pass IO objects in directly:
       MyConsole.new(:input => cmd_file, :output => log_file)
     end
   end
+  
+Normally, if an error occurs, Rink will print a nicely-formatted message to its output stream. This is helpful if you're
+using the console but not if you're trying to write tests for one. So, you can disable error catching within Rink by
+passing :rescue_errors => false to the initializer:
+
+  MyConsole.new(:input => "raise", :rescue_errors => false)
+  #=> RuntimeError!
 
 == Note on Patches/Pull Requests
  

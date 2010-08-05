@@ -15,6 +15,15 @@ describe Rink::Console do
   before(:each) { @input = ""; @output = "" }
   subject { Rink::Console.new(:input => "", :silent => true) }
   
+  # May need a better way to test this.
+  it "should be able to add hooks custom commands" do
+    # Create a subclass of Rink::Console so we don't contaminate the environment
+    klass = Class.new(Rink::Console)
+    klass.command(:help) { |*args| 'how may I help you?' }
+    k = klass.new(:input => "help", :output => @output, :rescue_errors => false)
+    @output.should =~ /how may I help you\?/ 
+  end
+  
   it "should be able to exit" do
     # yeah, it was an oversight. Catching all Exceptions resulted in catching SystemExit, so the app couldn't be
     # stopped. Whoops.

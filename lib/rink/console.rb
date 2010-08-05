@@ -5,6 +5,7 @@ module Rink
     attr_writer :namespace, :silenced
     attr_reader :input, :output
     delegate :silenced?, :print, :write, :puts, :to => :output, :allow_nil => true
+    delegate :banner, :commands, :to => 'self.class'
     
     def initialize(options = {})
       options = default_options.merge(options)
@@ -14,10 +15,6 @@ module Rink
     
     def namespace
       @namespace ||= Object.new
-    end
-
-    def banner
-      self.class.banner
     end
 
     # Runs a series of commands in the context of this Console. Input can be either a string
@@ -51,12 +48,13 @@ module Rink
 
     def apply_options(options)
       return unless options
-      @_options = options
+      @_options ||= {}
+      @_options.merge! options
       @input  = setup_input_method(options[:input] || @input)
       @output = setup_output_method(options[:output] || @output)
       @output.silenced = options.key?(:silent) ? options[:silent] : !@output || @output.silenced?
       @namespace = options[:namespace] unless options[:namespace].nil?
-      @line_processor = options.delete(:processor) || options.delete(:line_processor) || @line_processor
+      @line_processor = options[:processor] || options[:line_processor] || @line_processor
       
       if @input
         @input.output = @output
@@ -89,20 +87,34 @@ module Rink
           @prompt = msg
         end
       end
+      
+      # Adds a custom command to the console. When the command is typed, a custom block of code
+      # will fire. The command may contain spaces. Any words following the command will be sent
+      # to the block as an array of arguments.
+      def command(name, case_sensitive = false, &block)
+        commands[name.to_s] = { :case_sensitive => case_sensitive, :block => block }
+      end
+      
+      # Returns a hash containing all registered commands.
+      def commands
+        @commands ||= {}
+      end
 
       # Default options are:
       #  :output => STDOUT,
       #  :input  => STDIN,
       #  :banner => true,
       #  :silent => false,
-      #  :processor => Rink::LineProcessor::PureRuby.new(self)
+      #  :processor => Rink::LineProcessor::PureRuby.new(self),
+      #  :rescue_errors => true
       def default_options
         {
           :output => STDOUT,
           :input  => STDIN,
           :banner => true,
           :silent => false,
-          :processor => Rink::LineProcessor::PureRuby.new(self)
+          :processor => Rink::LineProcessor::PureRuby.new(self),
+          :rescue_errors => true,
         }
       end
     end
@@ -118,32 +130,52 @@ module Rink
     end
     
     # Executes the given command, which is a String, and returns a String to be
-    # printed to @output.
-    def process_command(cmd)
-      result = eval(cmd, namespace.send(:binding), self.class.name)
+    # printed to @output. If a command cannot be found, it is treated as Ruby code
+    # and is executed within the context of @namespace.
+    #
+    # You can override this method to produce custom results.
+    def process_line(line)
+      catch(:command_not_found) { return process_command(line) }
+      
+      # no matching commands, try to eval it as ruby code
+      result = eval(line, namespace.send(:binding), self.class.name)
       "  => #{result.inspect}"
     end
-
-    # Sends the command to #process_command and prints the result to @output.
-    #
-    # If an error occurs, the error and a backtrace are printed instead.
-    def handle_input(cmd)
-      puts process_command(cmd)
-    rescue SystemExit
-      raise
-    rescue Exception
-      print $!.class.name, ": ", $!.message, "\n"
-      print "\t", $!.backtrace.join("\n\t"), "\n"
-    end
     
+    # Searches for a command matching cmd and returns the result of running its block.
+    # If the command is not found, process_command throws :command_not_found.
+    def process_command(cmd)
+      commands.each do |command, options|
+        #$stdout.puts options.inspect, command.inspect, cmd.inspect
+        #$stdout.puts '--'
+        if (options[:case_sensitive]  && cmd[/^#{Regexp::escape command}\s*(.*)/]) ||
+           (!options[:case_sensitive] && cmd[/^#{Regexp::escape command}\s*(.*)/i])
+          args = $~[1].split
+          return options[:block].call(args)
+        end
+      end
+      throw :command_not_found
+    end
 
   private    
     include Rink::IOMethods
 
     def enter_input_loop
-      while inln = @input.gets
-        inln.strip!
-        handle_input(inln) unless inln.length == 0
+      puts
+      while cmd = @input.gets
+        cmd.strip!
+        unless cmd.length == 0
+          begin
+            puts process_line(cmd)
+          rescue SystemExit
+            raise
+          rescue Exception
+            raise unless gather_options[:rescue_errors]
+            print $!.class.name, ": ", $!.message, "\n"
+            print "\t", $!.backtrace.join("\n\t"), "\n"
+          end
+          puts
+        end
       end
     end
     
