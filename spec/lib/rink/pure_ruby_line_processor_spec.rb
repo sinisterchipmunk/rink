@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe Rink::LineProcessor::PureRuby do
   it "should autocomplete" do
-    subject.autocomplete('insp', Object.new).should == "inspect"
+    subject.autocomplete('insp', Object.new).should == ["inspect"]
   end
   
   # probably don't need to test this directly since readline does it (and we know it works) ...

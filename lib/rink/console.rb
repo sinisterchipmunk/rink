@@ -84,7 +84,7 @@ module Rink
       # Sets or returns the prompt for this console.
       def prompt(msg = nil)
         if msg.nil?
-          @prompt ||= "#{self.class.name} > "
+          @prompt ||= "#{name} > "
         else
           @prompt = msg
         end
