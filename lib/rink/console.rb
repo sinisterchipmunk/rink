@@ -129,7 +129,9 @@ module Rink
     # If an error occurs, the error and a backtrace are printed instead.
     def handle_input(cmd)
       puts process_command(cmd)
-    rescue
+    rescue SystemExit
+      raise
+    rescue Exception
       print $!.class.name, ": ", $!.message, "\n"
       print "\t", $!.backtrace.join("\n\t"), "\n"
     end

@@ -14,6 +14,12 @@ describe Rink::Console do
 
   before(:each) { @input = ""; @output = "" }
   subject { Rink::Console.new(:input => "", :silent => true) }
+  
+  it "should be able to exit" do
+    # yeah, it was an oversight. Catching all Exceptions resulted in catching SystemExit, so the app couldn't be
+    # stopped. Whoops.
+    proc { console("exit") }.should raise_error(SystemExit)
+  end
 
   it "should show a banner" do
     console
