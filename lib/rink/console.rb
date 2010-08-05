@@ -10,9 +10,33 @@ module Rink
     def initialize(options = {})
       options = default_options.merge(options)
       apply_options(options)
-      run(options)
+      run(options) unless options[:defer]
     end
     
+    # The Ruby object within whose context the console will be run.
+    # For example:
+    #  class CustomNamespace
+    #    def save_the_world
+    #      'maybe later'
+    #    end
+    #  end
+    #  
+    #  Rink::Console.new(:namespace => CustomNamespace.new)
+    #  # ...
+    #  Rink::Console > save_the_world
+    #  => "maybe later"
+    #
+    # This is most useful if you have an object with a lot of methods that you wish to treat
+    # as console commands. Also, it segregates the user from the Rink::Console instance, preventing
+    # them from making any changes to it.
+    #
+    # Note that you can set a console's namespace to itself if you _want_ the user to have access to it:
+    #
+    #  # Create a Rink instance, but do not wait for input yet
+    #  rink = Rink::Console.new(:defer => true)
+    #  rink.namespace = rink
+    #  rink.run
+    #
     def namespace
       @namespace ||= Object.new
     end
@@ -20,12 +44,13 @@ module Rink
     # Runs a series of commands in the context of this Console. Input can be either a string
     # or an input stream. Other options include:
     #
+    #   :input     => a string or an input stream
     #   :output    => a string or an output stream.
     #   :banner    => boolean: whether to print a welcome banner.
     #   :silent    => boolean: whether to print any output at all.
     #   :namespace => any object (other than nil). Will be used as the default namespace.
     #
-    def run(input, options = {})
+    def run(input = {}, options = {})
       if input.kind_of?(Hash)
         options = options.merge(input)
       else
@@ -38,6 +63,9 @@ module Rink
       end
     end
 
+    # runs a block of code with the specified options set, and then sets them back to their previous state.
+    # Options that are nil or not specified will be inherited from the previous state; and options in the
+    # previous state that are nil or not specified will not be reverted.
     def temporary_options(options)
       old_options = gather_options
       apply_options(options)
@@ -46,6 +74,7 @@ module Rink
       apply_options(old_options)
     end
 
+    # Applies a new set of options. Options that are currently unset or nil will not be modified.
     def apply_options(options)
       return unless options
       @_options ||= {}
@@ -65,6 +94,7 @@ module Rink
       end
     end
     
+    # Returns the current set of options.
     def gather_options
       @_options
     end
@@ -101,12 +131,13 @@ module Rink
       end
 
       # Default options are:
+      #  :processor => Rink::LineProcessor::PureRuby.new(self),
       #  :output => STDOUT,
       #  :input  => STDIN,
-      #  :banner => true,
-      #  :silent => false,
-      #  :processor => Rink::LineProcessor::PureRuby.new(self),
-      #  :rescue_errors => true
+      #  :banner => true,             # if false, Rink won't show a banner.
+      #  :silent => false,            # if true, Rink won't produce output.
+      #  :rescue_errors => true       # if false, Rink won't catch errors.
+      #  :defer => false              # if true, Rink won't automatically wait for input.
       def default_options
         {
           :output => STDOUT,
@@ -115,11 +146,13 @@ module Rink
           :silent => false,
           :processor => Rink::LineProcessor::PureRuby.new(self),
           :rescue_errors => true,
+          :defer => false,
         }
       end
     end
 
   protected
+    # The default set of options which will be used wherever an option from #apply_options is unset or nil.
     def default_options
       @default_options ||= self.class.default_options
     end
@@ -179,6 +212,7 @@ module Rink
       end
     end
     
+    # Runs the autocomplete method from the line processor, then reformats its result to be an array.
     def autocomplete(line)
       return [] unless @line_processor
       result = @line_processor.autocomplete(line, namespace)
