@@ -113,8 +113,17 @@ describe Rink::Console do
   end
 
   it "should allow setting namespace" do
-    subject.namespace = ExampleObject.new
-    console("inspect")
-    @output.should =~ /  => "#<example>"$/
+    obj = ExampleObject.new
+    subject.namespace = obj
+    console("self").should == obj
+  end
+
+  it "should allow presetting namespace" do
+    obj = ExampleObject.new
+    console("self", :namespace => obj).should == obj
+  end
+
+  it "should allow lazily presetting namespace" do
+    console("self", :namespace => proc { ExampleObject.new }).should be_kind_of(ExampleObject)
   end
 end

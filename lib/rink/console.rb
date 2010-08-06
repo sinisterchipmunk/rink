@@ -7,6 +7,8 @@ module Rink
     delegate :silenced?, :print, :write, :puts, :to => :output, :allow_nil => true
     delegate :banner, :commands, :to => 'self.class'
     
+    # One caveat: if you override #initialize, make sure to do as much setup as possible before calling super -- or,
+    # call super with :defer => true -- because otherwise Rink will start the console before your init code executes.
     def initialize(options = {})
       options = default_options.merge(options)
       apply_options(options)
@@ -56,6 +58,10 @@ module Rink
     #   :silent    => boolean: whether to print any output at all.
     #   :namespace => any object (other than nil). Will be used as the default namespace.
     #
+    # Note also that any value can be a proc. In this case, the proc will be called while
+    # applying the options and the  return value of that proc will be used. This is useful
+    # for lazy loading a value or for setting options based on some condition.
+    #
     def run(input = {}, options = {})
       if input.kind_of?(Hash)
         options = options.merge(input)
@@ -83,6 +89,10 @@ module Rink
     # Applies a new set of options. Options that are currently unset or nil will not be modified.
     def apply_options(options)
       return unless options
+      
+      options.each do |key, value|
+        options[key] = value.call if value.kind_of?(Proc)
+      end
       @_options ||= {}
       @_options.merge! options
       @input  = setup_input_method(options[:input] || @input)
