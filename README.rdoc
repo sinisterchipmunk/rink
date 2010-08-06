@@ -164,6 +164,8 @@ You can also pass IO objects in directly:
     end
   end
   
+== Dealing With Errors
+  
 Normally, if an error occurs, Rink will print a nicely-formatted message to its output stream. This is helpful if you're
 using the console but not if you're trying to write tests for one. So, you can disable error catching within Rink by
 passing +:rescue_errors => false+ to the initializer:
