@@ -23,8 +23,56 @@ application-specific interactive console, extend the Rink::Console class:
   #...
   MyConsole.new
   
-By default, Rink will execute code within the context of its #namespace (see the Rink::Console class documentation for
-details). You can, however, add specific commands to Rink like so:
+=== The Ruby Console
+
+With the default set of options, any input that is not processed as a custom command will be executed as Ruby code,
+much like the Ruby IRB. Guess there's not much more to say about that, so here's an example to drive the point home:
+
+  >> Interactive Console <<
+  
+  Rink::Console > class Person
+  Rink::Console >   attr_reader :first_name
+  Rink::Console >   def initialize
+  Rink::Console >     @first_name = "Colin"
+  Rink::Console >   end
+  Rink::Console > end
+    => nil
+  Rink::Console > Person.new.first_name
+    => "Colin"
+  Rink::Console > 
+  
+
+=== The Rink Namespace
+
+By default, Rink will execute code within the context of its namespace (see the Rink::Console class documentation for
+details). Basically, you can choose any Ruby object and run the console within the context of that object. For example:
+
+  class Person
+    attr_reader :first_name
+    
+    def initialize
+      @first_name = "Colin"
+    end
+  end
+  
+  class MyConsole < Rink::Console
+    option :namespace => Person.new
+  end
+  
+  MyConsole.new
+  
+  >> Interactive Console <<
+
+  MyConsole > self
+    => #<Person:0x10171c3a0 @first_name="Colin">
+  
+  MyConsole > first_name
+    => "Colin"
+  
+
+=== Custom Commands
+
+Rink isn't limited only to running Ruby code, however. You can also add specific commands to Rink like so:
 
   class MyConsole < Rink::Console
     command :help do |args|
@@ -71,10 +119,13 @@ In addition to commands, you can also easily add or override default options in 
   MyConsole > greet_me
   Hello there!
   
+See the class documentation for Rink::Console for much more detailed information, including how to disable Ruby code
+processing entirely.
+  
 == Running From The Command Line
 
-You've seen numerous examples of how to start Rink from within Ruby. The same thing works from within IRB or a Rake
-task. Additionally, Rink ships with a script so that you can run it directly from the command line:
+You've seen numerous examples of how to start Rink from within Ruby. The same thing works from within IRB or inside of
+a Rake task. Additionally, Rink ships with a script so that you can run it directly from the command line:
 
   $ rink
   
@@ -115,7 +166,7 @@ You can also pass IO objects in directly:
   
 Normally, if an error occurs, Rink will print a nicely-formatted message to its output stream. This is helpful if you're
 using the console but not if you're trying to write tests for one. So, you can disable error catching within Rink by
-passing :rescue_errors => false to the initializer:
+passing +:rescue_errors => false+ to the initializer:
 
   MyConsole.new(:input => "raise", :rescue_errors => false)
   #=> RuntimeError!
