@@ -8,7 +8,7 @@ begin
     gem.summary = %Q{Makes interactive consoles awesome.}
     gem.description = %Q{Makes interactive consoles awesome.}
     gem.email = "sinisterchipmunk@gmail.com"
-    gem.homepage = "http://github.com/sinisterchipmunk/rink"
+    gem.homepage = "http://www.thoughtsincomputation.com"
     gem.authors = ["Colin MacKenzie IV"]
     
     gem.add_development_dependency "rspec", ">= 1.3.0"
