@@ -24,6 +24,10 @@ describe Rink::Console do
     @output.should match(/I don't know the word \"x.\"/)
   end
   
+  it "should not raise a NameError when invoking a dynamically-defined method" do
+    console("def a; 5; end; a", :rescue_errors => false).should == 5
+  end
+  
   it "should retain local variables" do
     subject.run("x = 5\nx", :rescue_errors => false)
   end

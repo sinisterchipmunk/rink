@@ -4,6 +4,7 @@ require File.expand_path(File.join(File.dirname(__FILE__), "input_method/io"))
 require File.expand_path(File.join(File.dirname(__FILE__), "input_method/file"))
 require File.expand_path(File.join(File.dirname(__FILE__), "output_method/base"))
 require File.expand_path(File.join(File.dirname(__FILE__), "output_method/io"))
+require 'stringio'
 
 module Rink
   module IOMethods

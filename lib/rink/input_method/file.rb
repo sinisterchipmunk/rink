@@ -3,7 +3,9 @@ module Rink
     class File < Rink::InputMethod::Base
       def initialize(file)
         super
-        @io = open(file)
+        @io = file
+        @line_num = 0
+        @lines = []
       end
 
       def eof?
