@@ -13,6 +13,7 @@ module Rink
       def gets
         print @prompt
         line = @lines[@line_num += 1] = input.gets
+        line += "\n" unless !line || line =~ /\n/
         print line if line
         line
       end

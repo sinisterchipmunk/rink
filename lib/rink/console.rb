@@ -32,10 +32,7 @@ module Rink
     #
     # Note that you can set a console's namespace to itself if you _want_ the user to have access to it:
     #
-    #  # Create a Rink instance, but do not wait for input yet
-    #  rink = Rink::Console.new(:defer => true)
-    #  rink.namespace = rink
-    #  rink.run
+    #  Rink::Console.new(:namespace => :self)
     #
     def namespace
       @namespace ||= Object.new
@@ -82,8 +79,16 @@ module Rink
       @input  = setup_input_method(options[:input] || @input)
       @output = setup_output_method(options[:output] || @output)
       @output.silenced = options.key?(:silent) ? options[:silent] : !@output || @output.silenced?
-      @namespace = options[:namespace] unless options[:namespace].nil?
       @line_processor = options[:processor] || options[:line_processor] || @line_processor
+      @allow_ruby = options.key?(:allow_ruby) ? options[:allow_ruby] : @allow_ruby
+
+      if options[:namespace]
+        ns = options[:namespace] == :self ? self : options[:namespace]
+        if ns != @namespace
+          @namespace = ns
+          @namespace_binding = nil
+        end
+      end
       
       if @input
         @input.output = @output
@@ -138,6 +143,7 @@ module Rink
       #  :silent => false,            # if true, Rink won't produce output.
       #  :rescue_errors => true       # if false, Rink won't catch errors.
       #  :defer => false              # if true, Rink won't automatically wait for input.
+      #  :allow_ruby => true          # if false, Rink won't execute unmatched commands as Ruby code.
       def default_options
         {
           :output => STDOUT,
@@ -147,6 +153,7 @@ module Rink
           :processor => Rink::LineProcessor::PureRuby.new(self),
           :rescue_errors => true,
           :defer => false,
+          :allow_ruby => true,
         }
       end
     end
@@ -166,25 +173,45 @@ module Rink
     # printed to @output. If a command cannot be found, it is treated as Ruby code
     # and is executed within the context of @namespace.
     #
-    # You can override this method to produce custom results.
+    # You can override this method to produce custom results, or you can use the
+    # +:allow_ruby => false+ option in #run to prevent Ruby code from being executed.
     def process_line(line)
-      catch(:command_not_found) { return process_command(line) }
+      args = line.split
+      cmd = args.shift
       
-      # no matching commands, try to eval it as ruby code
-      result = eval(line, namespace.send(:binding), self.class.name)
-      "  => #{result.inspect}"
+      catch(:command_not_found) { return process_command(cmd, args) }
+
+      # no matching commands, try to process it as ruby code
+      if @allow_ruby
+        result = process_ruby_code(line)
+        puts "  => #{result.inspect}"
+        return result
+      end
+      
+      puts "I don't know the word \"#{cmd}.\""
+    end
+    
+    def process_ruby_code(code)
+      prepare_scanner_for(code)
+      evaluate_scanner_statement
+    end
+    
+    # Returns the instance of Rink::Lexer used to process Ruby code.
+    def scanner
+      return @scanner if @scanner
+      @scanner = Rink::Lexer.new
+      @scanner.exception_on_syntax_error = false
+      @scanner
     end
     
     # Searches for a command matching cmd and returns the result of running its block.
     # If the command is not found, process_command throws :command_not_found.
-    def process_command(cmd)
+    def process_command(cmd, args)
       commands.each do |command, options|
-        #$stdout.puts options.inspect, command.inspect, cmd.inspect
-        #$stdout.puts '--'
-        if (options[:case_sensitive]  && cmd[/^#{Regexp::escape command}\s*(.*)/]) ||
-           (!options[:case_sensitive] && cmd[/^#{Regexp::escape command}\s*(.*)/i])
-          args = $~[1].split
-          return options[:block].call(args)
+        if (options[:case_sensitive]  && cmd == command) ||
+           (!options[:case_sensitive] && cmd.downcase == command.downcase)
+          #return options[:block].call(args)
+          return instance_exec(*args, &options[:block])
         end
       end
       throw :command_not_found
@@ -192,24 +219,59 @@ module Rink
 
   private    
     include Rink::IOMethods
+    
+    def evaluate_scanner_statement
+      scanner.each_top_level_statement do |code, line_no|
+        return eval(code, namespace_binding, self.class.name, line_no)
+      end
+    end
+    
+    def namespace_binding
+      @namespace_binding ||= namespace.send(:binding)
+    end
+    
+    def prepare_scanner_for(code)
+      # the scanner prompt should be empty at first because we've already received the first line. Nothing to prompt for.
+      scanner.set_prompt nil
+      
+      # redirect scanner output to @output so that prompts go where they belong
+      scanner.output = @output
+      
+      # the meat: scanner will yield to set_input whenever it needs another line of code (including the first line).
+      # the first yield must give the code we've already received; subsequent yields should get more data from @input.
+      first = true
+      scanner.set_input(@input) do
+        line = if !first
+          # For subsequent gets, we need a prompt.
+          scanner.set_prompt prompt
+          line = @input.gets
+          scanner.set_prompt nil
+          line
+        else
+          first = false
+          code + "\n"
+        end
+
+        line
+      end
+    end
 
     def enter_input_loop
-      puts
       while cmd = @input.gets
         cmd.strip!
         unless cmd.length == 0
           begin
-            puts process_line(cmd)
-          rescue SystemExit
+            @last_value = process_line(cmd)
+          rescue SystemExit, SignalException
             raise
           rescue Exception
             raise unless gather_options[:rescue_errors]
             print $!.class.name, ": ", $!.message, "\n"
             print "\t", $!.backtrace.join("\n\t"), "\n"
           end
-          puts
         end
       end
+      @last_value
     end
     
     # Runs the autocomplete method from the line processor, then reformats its result to be an array.

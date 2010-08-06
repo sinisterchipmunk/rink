@@ -12,7 +12,9 @@ module Rink
 
       def gets
         print @prompt
-        print(line = @lines[@line_num += 1] = @io.gets)
+        line = @lines[@line_num += 1] = @io.gets
+        line += "\n" unless !line || line =~ /\n/
+        print(line)
         line
       end
     end

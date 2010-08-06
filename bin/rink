@@ -1,0 +1,64 @@
+#!/usr/bin/env ruby
+require File.expand_path(File.join(File.dirname(__FILE__), "../lib/rink"))
+
+def find_class(name, path)
+  if const = eval(name)
+    return const
+  end rescue nil
+  
+  paths = [path, File.join(path, "lib")]
+  filename = name.gsub(/::/, '/').gsub(/([A-Z]+)([A-Z][a-z])/,'\1_\2').
+    gsub(/([a-z\d])([A-Z])/,'\1_\2').tr("-", "_").downcase
+  
+  filename += ".rb" unless filename[/\.rb$/]
+
+  paths.each do |dir|
+    file = File.expand_path(File.join(dir, filename))
+    if File.exist?(file)
+      load file
+      if const = eval(name)
+        return const
+      end rescue nil
+    end
+  end
+  
+  raise "Console could not be found: #{name}\n  (searching for '#{filename}' in #{paths.inspect})"
+end
+
+def banner
+  puts "Usage:"
+  puts "  rink [My::Console] [path/to/file]"
+  puts
+  puts "By default, Rink::Console will be used. If path is omitted, the"
+  puts "current directory will be used."
+  puts
+  puts "Rink will check ./[file] and ./lib/[file] for the console to"
+  puts "load, where [file] is the underscored class name. For example,"
+  puts "App::Console would be found in either ./app/console.rb or "
+  puts "./lib/app/console.rb"
+  puts
+  exit
+end
+
+ARGV.each do |cmd|
+  if cmd == 'help' || cmd == '-h' || cmd == '/h' || cmd == '--help'
+    banner
+  end
+end
+
+puts
+begin
+  if ARGV.length == 0
+    klass = Rink::Console
+  elsif ARGV.length == 1
+    klass = find_class(ARGV.first, ".")
+  elsif ARGV.length == 2
+    klass = find_class(ARGV.first, ARGV.last)
+  else
+    banner
+  end
+  klass.new
+rescue
+  puts $!.message
+  puts
+end
