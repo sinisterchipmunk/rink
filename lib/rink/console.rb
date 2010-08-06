@@ -103,6 +103,7 @@ module Rink
     def gather_options
       @_options
     end
+    alias options gather_options
 
     class << self
       # Sets or returns the banner displayed when the console is started.
@@ -112,6 +113,18 @@ module Rink
         else
           @banner = msg
         end
+      end
+      
+      # Sets or overrides a default option.
+      #
+      # Example:
+      #
+      #   class MyConsole < Rink::Console
+      #     option :allow_ruby => false, :greeting => "Hi there!"
+      #   end
+      #
+      def option(options)
+        default_options.merge! options
       end
       
       # Sets or returns the prompt for this console.
@@ -134,7 +147,7 @@ module Rink
       def commands
         @commands ||= {}
       end
-
+      
       # Default options are:
       #  :processor => Rink::LineProcessor::PureRuby.new(self),
       #  :output => STDOUT,
@@ -145,7 +158,7 @@ module Rink
       #  :defer => false              # if true, Rink won't automatically wait for input.
       #  :allow_ruby => true          # if false, Rink won't execute unmatched commands as Ruby code.
       def default_options
-        {
+        @default_options ||= {
           :output => STDOUT,
           :input  => STDIN,
           :banner => true,
@@ -157,6 +170,8 @@ module Rink
         }
       end
     end
+
+    command(:exit) { |args| instance_variable_set("@exiting", true) }
 
   protected
     # The default set of options which will be used wherever an option from #apply_options is unset or nil.
@@ -211,7 +226,7 @@ module Rink
         if (options[:case_sensitive]  && cmd == command) ||
            (!options[:case_sensitive] && cmd.downcase == command.downcase)
           #return options[:block].call(args)
-          return instance_exec(*args, &options[:block])
+          return instance_exec(args, &options[:block])
         end
       end
       throw :command_not_found
@@ -257,7 +272,7 @@ module Rink
     end
 
     def enter_input_loop
-      while cmd = @input.gets
+      while !@exiting && (cmd = @input.gets)
         cmd.strip!
         unless cmd.length == 0
           begin

@@ -17,6 +17,8 @@ def find_class(name, path)
     if File.exist?(file)
       load file
       if const = eval(name)
+        puts "Loaded constant #{const} from #{file}"
+        puts
         return const
       end rescue nil
     end

@@ -29,9 +29,9 @@ details). You can, however, add specific commands to Rink like so:
   class MyConsole < Rink::Console
     command :help do |args|
       if args.length == 0
-        "What do you need help with?"
+        puts "What do you need help with?"
       else
-        "Sorry, I don't know anything about #{args.inspect}."
+        puts "Sorry, I don't know anything about #{args.inspect}."
       end
     end
   end
@@ -48,7 +48,48 @@ details). You can, however, add specific commands to Rink like so:
   MyConsole > help feed the poor
   Sorry, I don't know anything about ["feed", "the", "poor"]
   
-  MyConsole > 
+  MyConsole >
+   
+In addition to commands, you can also easily add or override default options in your console:
+
+  class MyConsole < Rink::Console
+    option :allow_ruby => false, :welcome => "Hello there!"
+    command :greet_me do |args|
+      puts options[:welcome]
+    end
+  end
+  
+  MyConsole.new
+  
+  # produces...
+  
+  >> Interactive Console <<
+  
+  MyConsole > inspect
+  I don't know the word "inspect."
+    
+  MyConsole > greet_me
+  Hello there!
+  
+== Running From The Command Line
+
+You've seen numerous examples of how to start Rink from within Ruby. The same thing works from within IRB or a Rake
+task. Additionally, Rink ships with a script so that you can run it directly from the command line:
+
+  $ rink
+  
+If you've extended Rink, you can give it the name of the class you extended it with. Rink will look in both the current
+directory, and the "lib" directory (if present) beneath the current location:
+
+  $ rink My::Console
+
+  Loaded constant My::Console from /Users/colin/projects/gems/rink/my/console.rb
+
+  >> Interactive Console <<
+  My::Console > 
+  
+If you need to load the console from a nonstandard directory, specify the path to that directory as a second argument.
+Rink will check both that directory and any 'lib' directory beneath it for your console.
 
 == Testing
 
