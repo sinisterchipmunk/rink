@@ -1,5 +1,7 @@
 = rink
 
+  gem install rink
+  
 Makes interactive consoles awesome. More specifically, it does this by automating as much as conceivably possible so
 that you can get right down to what you really care about: your application.
 
