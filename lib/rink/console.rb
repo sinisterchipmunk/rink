@@ -272,6 +272,7 @@ module Rink
     end
 
     def enter_input_loop
+      @exiting = false
       while !@exiting && (cmd = @input.gets)
         cmd.strip!
         unless cmd.length == 0

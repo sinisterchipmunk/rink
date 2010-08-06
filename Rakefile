@@ -10,10 +10,9 @@ begin
     gem.email = "sinisterchipmunk@gmail.com"
     gem.homepage = "http://github.com/sinisterchipmunk/rink"
     gem.authors = ["Colin MacKenzie IV"]
-    gem.add_dependency "highline", ">= 1.5.0"
+    
     gem.add_development_dependency "rspec", ">= 1.3.0"
 
-    gem.files = FileList['**/*']
     gem.test_files = FileList['spec/**/*']
   end
   Jeweler::GemcutterTasks.new

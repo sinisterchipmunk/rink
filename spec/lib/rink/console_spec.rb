@@ -70,7 +70,11 @@ describe Rink::Console do
   it "should be able to exit" do
     # yeah, it was an oversight. Catching all Exceptions resulted in catching SystemExit, so the app couldn't be
     # stopped. Whoops.
-    proc { console("exit") }.should raise_error(SystemExit)
+    #proc { console("exit") }.should raise_error(SystemExit)
+    
+    # now an honest-to-goodness 'exit' command exists, so SystemExit doesn't get raised.
+    # instead we'll just make sure that exit doesn't execute any further code.
+    console("exit\n1").should_not == 1
   end
 
   it "should show a banner" do
