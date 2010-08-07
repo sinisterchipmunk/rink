@@ -2,7 +2,7 @@ module Rink
   class Console
     extend Rink::Delegation
     attr_reader :line_processor
-    attr_writer :namespace, :silenced
+    attr_writer :silenced
     attr_reader :input, :output
     delegate :silenced?, :print, :write, :puts, :to => :output, :allow_nil => true
     delegate :banner, :commands, :to => 'self.class'
@@ -11,8 +11,13 @@ module Rink
     # call super with :defer => true -- because otherwise Rink will start the console before your init code executes.
     def initialize(options = {})
       options = default_options.merge(options)
+      @namespace = Rink::Namespace.new
       apply_options(options)
       run(options) unless options[:defer]
+    end
+    
+    def namespace=(ns)
+      @namespace.replace(ns)
     end
     
     # The Ruby object within whose context the console will be run.
@@ -37,16 +42,7 @@ module Rink
     #  Rink::Console.new(:namespace => :self)
     #
     def namespace
-      @namespace ||= begin
-        # We want namespace to be any object, and in order to do that, Rink will call namespace#binding.
-        # But by default, the namespace should be TOPLEVEL_BINDING. If we set @namespace to this,
-        # Rink will call TOPLEVEL_BINDING#binding, which is an error. So instead we'll create a singleton
-        # object and override #binding on that object to return TOPLEVEL_BINDING. Effectively, that
-        # singleton object becomes (more-or-less) a proxy into the toplevel object. (Is there a better way?)
-        klass = Class.new(Object)
-        klass.send(:define_method, :binding) { TOPLEVEL_BINDING }
-        klass.new
-      end
+      @namespace.ns
     end
 
     # Runs a series of commands in the context of this Console. Input can be either a string
@@ -103,10 +99,7 @@ module Rink
 
       if options[:namespace]
         ns = options[:namespace] == :self ? self : options[:namespace]
-        if ns != @namespace
-          @namespace = ns
-          @namespace_binding = nil
-        end
+        @namespace.replace(ns)
       end
       
       if @input
@@ -255,20 +248,16 @@ module Rink
     include Rink::IOMethods
     
     def evaluate_scanner_statement
-      _caller = eval("caller", namespace_binding)
+      _caller = @namespace.evaluate("caller")
       scanner.each_top_level_statement do |code, line_no|
         begin
-          return eval(code, namespace_binding, self.class.name, line_no)
+          return @namespace.evaluate(code, self.class.name, line_no)
         rescue
           # clean out the backtrace so that it starts with the console line instead of program invocation.
           _caller.reverse.each { |line| $!.backtrace.pop if $!.backtrace.last == line }
           raise
         end
       end
-    end
-    
-    def namespace_binding
-      @namespace_binding ||= namespace.send(:binding)
     end
     
     def prepare_scanner_for(code)
@@ -319,7 +308,7 @@ module Rink
     # Runs the autocomplete method from the line processor, then reformats its result to be an array.
     def autocomplete(line)
       return [] unless @line_processor
-      result = @line_processor.autocomplete(line, namespace)
+      result = @line_processor.autocomplete(line, namespace.ns)
       case result
         when String
           [result]

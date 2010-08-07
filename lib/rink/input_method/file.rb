@@ -7,6 +7,10 @@ module Rink
         @line_num = 0
         @lines = []
       end
+      
+      def input
+        @io
+      end
 
       def eof?
         @io.eof?

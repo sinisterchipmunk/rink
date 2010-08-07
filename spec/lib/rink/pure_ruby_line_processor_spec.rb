@@ -1,6 +1,8 @@
 require 'spec_helper'
 
 describe Rink::LineProcessor::PureRuby do
+  subject { Rink::LineProcessor::PureRuby.new }
+  
   it "should autocomplete" do
     subject.autocomplete('insp', Object.new).should == ["inspect"]
   end

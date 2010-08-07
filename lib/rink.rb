@@ -1,5 +1,7 @@
 #require 'sc-ansi'
 
+require File.expand_path(File.join(File.dirname(__FILE__), 'rink/namespace'))
+require File.expand_path(File.join(File.dirname(__FILE__), "core_ext/object"))
 require File.expand_path(File.join(File.dirname(__FILE__), "rink/delegation"))
 require File.expand_path(File.join(File.dirname(__FILE__), "rink/lexer"))
 require File.expand_path(File.join(File.dirname(__FILE__), 'rink/io_methods'))

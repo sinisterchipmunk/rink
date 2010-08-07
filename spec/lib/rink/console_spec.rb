@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe Rink::Console do
-  class ExampleObject
+  class ::ExampleObject
     def inspect
       "#<example>"
     end
@@ -13,7 +13,7 @@ describe Rink::Console do
     else options = {}
     end
     input = input.flatten.join("\n")
-    subject.run(input, options.merge(:output => @output, :silent => false))
+    subject.run(input, {:output => @output, :silent => false, :rescue_errors => false}.merge(options))
   end
 
   before(:each) { @input = ""; @output = "" }
@@ -93,16 +93,16 @@ describe Rink::Console do
   end
 
   it "should print return value, inspected" do
-    console("ExampleObject.new")
+    console("ExampleObject.new", :rescue_errors => false)
     @output.should =~ /  => #<example>$/
   end
 
   it "should not raise exceptions" do
-    proc { console("test") }.should_not raise_error
+    proc { console("test", :rescue_errors => true) }.should_not raise_error
   end
 
   it "should print exceptions" do
-    console("test")
+    console("test", :rescue_errors => true)
     @output.should =~ /ArgumentError: /
   end
 
@@ -115,6 +115,8 @@ describe Rink::Console do
   it "should allow setting namespace" do
     obj = ExampleObject.new
     subject.namespace = obj
+    subject.namespace.should == obj
+    
     console("self").should == obj
   end
 

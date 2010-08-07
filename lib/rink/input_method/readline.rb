@@ -16,6 +16,10 @@ begin
           @eof = false
         end
         
+        def input
+          $stdin
+        end
+        
         def gets
           # in case they were changed. Do we need this here?
           ::Readline.completion_append_character = completion_append_character 

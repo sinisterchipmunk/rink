@@ -119,7 +119,7 @@ module Rink
       
       def autocomplete(line, namespace)
         # Borrowed from irb/completion.rb
-        case line
+        result = case line
           when /^(\/[^\/]*\/)\.([^.]*)$/
             autocomplete_for_regexp($1, Regexp.quote($2))
             
@@ -161,6 +161,9 @@ module Rink
             candidates = eval("methods | private_methods | local_variables | self.class.constants", namespace.send(:binding))
             (candidates|RESERVED_WORDS).grep(/^#{Regexp.quote(line)}/)
         end
+        result.kind_of?(Array) ? 
+          result.collect { |r| r.kind_of?(String) ? r : r.to_s } :
+          result.kind_of?(String) ? result : result.to_s
       end
       
       private

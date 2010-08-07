@@ -13,6 +13,10 @@ module Rink
       attr_accessor :prompt
       attr_accessor :output
       
+      def encoding
+        input.external_encoding
+      end
+
       def input
         raise NotImplementedError, "input"
       end
