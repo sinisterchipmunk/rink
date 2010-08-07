@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{rink}
-  s.version = "1.0.0"
+  s.version = "1.0.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Colin MacKenzie IV"]
-  s.date = %q{2010-08-06}
+  s.date = %q{2010-08-07}
   s.default_executable = %q{rink}
   s.description = %q{Makes interactive consoles awesome.}
   s.email = %q{sinisterchipmunk@gmail.com}
@@ -38,18 +38,20 @@ Gem::Specification.new do |s|
      "lib/rink/lexer.rb",
      "lib/rink/line_processor/base.rb",
      "lib/rink/line_processor/pure_ruby.rb",
+     "lib/rink/namespace.rb",
      "lib/rink/output_method/base.rb",
      "lib/rink/output_method/io.rb",
      "rink.gemspec",
      "spec/lib/core_ext/object_spec.rb",
      "spec/lib/rink/console_spec.rb",
      "spec/lib/rink/io_methods_spec.rb",
+     "spec/lib/rink/namespace_spec.rb",
      "spec/lib/rink/pure_ruby_line_processor_spec.rb",
      "spec/lib/rink_spec.rb",
      "spec/spec.opts",
      "spec/spec_helper.rb"
   ]
-  s.homepage = %q{http://github.com/sinisterchipmunk/rink}
+  s.homepage = %q{http://www.thoughtsincomputation.com}
   s.rdoc_options = ["--charset=UTF-8"]
   s.require_paths = ["lib"]
   s.rubygems_version = %q{1.3.6}
@@ -61,6 +63,7 @@ Gem::Specification.new do |s|
      "spec/lib/rink",
      "spec/lib/rink/console_spec.rb",
      "spec/lib/rink/io_methods_spec.rb",
+     "spec/lib/rink/namespace_spec.rb",
      "spec/lib/rink/pure_ruby_line_processor_spec.rb",
      "spec/lib/rink_spec.rb",
      "spec/spec.opts",
