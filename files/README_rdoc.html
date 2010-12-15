@@ -1,0 +1,353 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>File: README.rdoc</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  <meta http-equiv="Content-Script-Type" content="text/javascript" />
+  <link rel="stylesheet" href=".././rdoc-style.css" type="text/css" media="screen" />
+  <script type="text/javascript">
+  // <![CDATA[
+
+  function popupCode( url ) {
+    window.open(url, "Code", "resizable=yes,scrollbars=yes,toolbar=no,status=no,height=150,width=400")
+  }
+
+  function toggleCode( id ) {
+    if ( document.getElementById )
+      elem = document.getElementById( id );
+    else if ( document.all )
+      elem = eval( "document.all." + id );
+    else
+      return false;
+
+    elemStyle = elem.style;
+    
+    if ( elemStyle.display != "block" ) {
+      elemStyle.display = "block"
+    } else {
+      elemStyle.display = "none"
+    }
+
+    return true;
+  }
+  
+  // Make codeblocks hidden by default
+  document.writeln( "<style type=\"text/css\">div.method-source-code { display: none }</style>" )
+  
+  // ]]>
+  </script>
+
+</head>
+<body>
+
+
+
+  <div id="fileHeader">
+    <h1>README.rdoc</h1>
+    <table class="header-table">
+    <tr class="top-aligned-row">
+      <td><strong>Path:</strong></td>
+      <td>README.rdoc
+      </td>
+    </tr>
+    <tr class="top-aligned-row">
+      <td><strong>Last Update:</strong></td>
+      <td>Wed Dec 15 08:47:41 -0500 2010</td>
+    </tr>
+    </table>
+  </div>
+  <!-- banner header -->
+
+  <div id="bodyContent">
+
+
+
+  <div id="contextContent">
+
+    <div id="description">
+      <h1>rink</h1>
+<pre>
+  gem install rink
+</pre>
+<p>
+Makes interactive consoles awesome. More specifically, it does this by
+automating as much as conceivably possible so that you can get right down
+to what you really care about: your application.
+</p>
+<p>
+After the second copy-and-paste of an interactive console that I&#8216;d
+written for a few of my various gems, I decided to extract that code into a
+plug-and-play-friendly console gem. This library is the result.
+</p>
+<h2>Examples</h2>
+<p>
+To create a new interactive console:
+</p>
+<pre>
+  require 'rink'
+  Rink::Console.new
+</pre>
+<p>
+The above example creates a console, but it doesn&#8216;t add much in the
+way of usefulness. To really get started on your application-specific
+interactive console, extend the <a
+href="../classes/Rink/Console.html">Rink::Console</a> class:
+</p>
+<pre>
+  class MyConsole &lt; Rink::Console
+    # ...
+  end
+
+  #...
+  MyConsole.new
+</pre>
+<h3>The Ruby Console</h3>
+<p>
+With the default set of options, any input that is not processed as a
+custom command will be executed as Ruby code, much like the Ruby IRB. Guess
+there&#8216;s not much more to say about that, so here&#8216;s an example
+to drive the point home:
+</p>
+<pre>
+  &gt;&gt; Interactive Console &lt;&lt;
+
+  Rink::Console &gt; class Person
+  Rink::Console &gt;   attr_reader :first_name
+  Rink::Console &gt;   def initialize
+  Rink::Console &gt;     @first_name = &quot;Colin&quot;
+  Rink::Console &gt;   end
+  Rink::Console &gt; end
+    =&gt; nil
+  Rink::Console &gt; Person.new.first_name
+    =&gt; &quot;Colin&quot;
+  Rink::Console &gt;
+</pre>
+<h3>The <a href="../classes/Rink.html">Rink</a> Namespace</h3>
+<p>
+By default, <a href="../classes/Rink.html">Rink</a> will execute code
+within the context of its namespace (see the <a
+href="../classes/Rink/Console.html">Rink::Console</a> class documentation
+for details). Basically, you can choose any Ruby object and run the console
+within the context of that object. For example:
+</p>
+<pre>
+  class Person
+    attr_reader :first_name
+
+    def initialize
+      @first_name = &quot;Colin&quot;
+    end
+  end
+
+  class MyConsole &lt; Rink::Console
+    option :namespace =&gt; Person.new
+  end
+
+  MyConsole.new
+
+  &gt;&gt; Interactive Console &lt;&lt;
+
+  MyConsole &gt; self
+    =&gt; #&lt;Person:0x10171c3a0 @first_name=&quot;Colin&quot;&gt;
+
+  MyConsole &gt; first_name
+    =&gt; &quot;Colin&quot;
+</pre>
+<h3>Custom Commands</h3>
+<p>
+<a href="../classes/Rink.html">Rink</a> isn&#8216;t limited only to running
+Ruby code, however. You can also add specific commands to <a
+href="../classes/Rink.html">Rink</a> like so:
+</p>
+<pre>
+  class MyConsole &lt; Rink::Console
+    command :help do |args|
+      if args.length == 0
+        puts &quot;What do you need help with?&quot;
+      else
+        puts &quot;Sorry, I don't know anything about #{args.inspect}.&quot;
+      end
+    end
+  end
+
+  MyConsole.new
+
+  # produces...
+
+  &gt;&gt; Interactive Console &lt;&lt;
+
+  MyConsole &gt; help
+  What do you need help with?
+
+  MyConsole &gt; help feed the poor
+  Sorry, I don't know anything about [&quot;feed&quot;, &quot;the&quot;, &quot;poor&quot;]
+
+  MyConsole &gt;
+</pre>
+<p>
+In addition to commands, you can also easily add or override default
+options in your console:
+</p>
+<pre>
+  class MyConsole &lt; Rink::Console
+    option :allow_ruby =&gt; false, :welcome =&gt; &quot;Hello there!&quot;
+    command :greet_me do |args|
+      puts options[:welcome]
+    end
+  end
+
+  MyConsole.new
+
+  # produces...
+
+  &gt;&gt; Interactive Console &lt;&lt;
+
+  MyConsole &gt; inspect
+  I don't know the word &quot;inspect.&quot;
+
+  MyConsole &gt; greet_me
+  Hello there!
+</pre>
+<p>
+See the class documentation for <a
+href="../classes/Rink/Console.html">Rink::Console</a> for much more
+detailed information, including how to disable Ruby code processing
+entirely.
+</p>
+<h2>Running From The Command Line</h2>
+<p>
+You&#8216;ve seen numerous examples of how to start <a
+href="../classes/Rink.html">Rink</a> from within Ruby. The same thing works
+from within IRB or inside of a Rake task. Additionally, <a
+href="../classes/Rink.html">Rink</a> ships with a script so that you can
+run it directly from the command line:
+</p>
+<pre>
+  $ rink
+</pre>
+<p>
+If you&#8216;ve extended <a href="../classes/Rink.html">Rink</a>, you can
+give it the name of the class you extended it with. <a
+href="../classes/Rink.html">Rink</a> will look in both the current
+directory, and the &quot;lib&quot; directory (if present) beneath the
+current location:
+</p>
+<pre>
+  $ rink My::Console
+
+  Loaded constant My::Console from /Users/colin/projects/gems/rink/my/console.rb
+
+  &gt;&gt; Interactive Console &lt;&lt;
+  My::Console &gt;
+</pre>
+<p>
+If you need to load the console from a nonstandard directory, specify the
+path to that directory as a second argument. <a
+href="../classes/Rink.html">Rink</a> will check both that directory and any
+&#8216;lib&#8217; directory beneath it for your console.
+</p>
+<h2>Testing</h2>
+<p>
+Testing your console turns out to be really easy, since the <a
+href="../classes/Rink/Console.html">Rink::Console</a> initializer takes
+some optional arguments to override the input and output streams. To can
+the set of input, for instance, just use:
+</p>
+<pre>
+  input_string = &quot;help&quot;
+  MyConsole.new(:input =&gt; input_string)
+</pre>
+<p>
+You&#8216;ll see the output of the above dumped to STDOUT. If you want to
+capture that output, the answer is pretty obvious:
+</p>
+<pre>
+  output_string = &quot;&quot;
+  MyConsole.new(:input =&gt; input_string, :output =&gt; output_string)
+  #=&gt; output_string now contains the contents of the result of running the commands found inside of input_string.
+</pre>
+<p>
+You can also pass IO objects in directly:
+</p>
+<pre>
+  File.open(&quot;commands.txt&quot;, &quot;r&quot;) do |cmd_file|
+    File.open(&quot;output.log&quot;, &quot;w&quot;) do |log_file|
+      MyConsole.new(:input =&gt; cmd_file, :output =&gt; log_file)
+    end
+  end
+</pre>
+<h2>Dealing With Errors</h2>
+<p>
+Normally, if an error occurs, <a href="../classes/Rink.html">Rink</a> will
+print a nicely-formatted message to its output stream. This is helpful if
+you&#8216;re using the console but not if you&#8216;re trying to write
+tests for one. So, you can disable error catching within <a
+href="../classes/Rink.html">Rink</a> by passing +:rescue_errors =&gt;
+false+ to the initializer:
+</p>
+<pre>
+  MyConsole.new(:input =&gt; &quot;raise&quot;, :rescue_errors =&gt; false)
+  #=&gt; RuntimeError!
+</pre>
+<h2>Note on Patches/Pull Requests</h2>
+<ul>
+<li>Fork the project.
+
+</li>
+<li>Make your feature addition or bug fix.
+
+</li>
+<li>Add tests for it. This is important so I don&#8216;t break it in a future
+version unintentionally.
+
+</li>
+<li>Commit, do not mess with rakefile, version, or history. (if you want to
+have your own version, that is fine but bump version in a commit by itself
+I can ignore when I pull)
+
+</li>
+<li>Send me a pull request. Bonus points for topic branches.
+
+</li>
+</ul>
+<h2>Copyright</h2>
+<p>
+Copyright (c) 2010 Colin MacKenzie IV. See LICENSE for details.
+</p>
+
+    </div>
+
+
+   </div>
+
+
+  </div>
+
+
+    <!-- if includes -->
+
+    <div id="section">
+
+
+
+
+
+      
+
+
+    <!-- if method_list -->
+
+
+  </div>
+
+
+<div id="validator-badges">
+  <p><small><a href="http://validator.w3.org/check/referer">[Validate]</a></small></p>
+</div>
+
+</body>
+</html>

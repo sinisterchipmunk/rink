@@ -1,0 +1,469 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>Module: Rink::Input</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  <meta http-equiv="Content-Script-Type" content="text/javascript" />
+  <link rel="stylesheet" href="../.././rdoc-style.css" type="text/css" media="screen" />
+  <script type="text/javascript">
+  // <![CDATA[
+
+  function popupCode( url ) {
+    window.open(url, "Code", "resizable=yes,scrollbars=yes,toolbar=no,status=no,height=150,width=400")
+  }
+
+  function toggleCode( id ) {
+    if ( document.getElementById )
+      elem = document.getElementById( id );
+    else if ( document.all )
+      elem = eval( "document.all." + id );
+    else
+      return false;
+
+    elemStyle = elem.style;
+    
+    if ( elemStyle.display != "block" ) {
+      elemStyle.display = "block"
+    } else {
+      elemStyle.display = "none"
+    }
+
+    return true;
+  }
+  
+  // Make codeblocks hidden by default
+  document.writeln( "<style type=\"text/css\">div.method-source-code { display: none }</style>" )
+  
+  // ]]>
+  </script>
+
+</head>
+<body>
+
+
+
+    <div id="classHeader">
+        <table class="header-table">
+        <tr class="top-aligned-row">
+          <td><strong>Module</strong></td>
+          <td class="class-name-in-header">Rink::Input</td>
+        </tr>
+        <tr class="top-aligned-row">
+            <td><strong>In:</strong></td>
+            <td>
+                <a href="../../files/lib/rink/input_rb.html">
+                lib/rink/input.rb
+                </a>
+        <br />
+            </td>
+        </tr>
+
+        </table>
+    </div>
+  <!-- banner header -->
+
+  <div id="bodyContent">
+
+
+
+  <div id="contextContent">
+
+
+
+   </div>
+
+    <div id="method-list">
+      <h3 class="section-bar">Methods</h3>
+
+      <div class="name-list">
+      <a href="#M000001">get_character</a>&nbsp;&nbsp;
+      <a href="#M000004">get_character</a>&nbsp;&nbsp;
+      <a href="#M000003">get_character</a>&nbsp;&nbsp;
+      <a href="#M000005">get_character</a>&nbsp;&nbsp;
+      <a href="#M000006">raw_no_echo_mode</a>&nbsp;&nbsp;
+      <a href="#M000007">restore_mode</a>&nbsp;&nbsp;
+      <a href="#M000002">terminal_size</a>&nbsp;&nbsp;
+      <a href="#M000008">terminal_size</a>&nbsp;&nbsp;
+      <a href="#M000009">terminal_size</a>&nbsp;&nbsp;
+      </div>
+    </div>
+
+  </div>
+
+
+    <!-- if includes -->
+
+    <div id="section">
+
+
+    <div id="constants-list">
+      <h3 class="section-bar">Constants</h3>
+
+      <div class="name-list">
+        <table summary="Constants">
+        <tr class="top-aligned-row context-row">
+          <td class="context-item-name">JRUBY</td>
+          <td>=</td>
+          <td class="context-item-value">defined?(RUBY_ENGINE) &amp;&amp; RUBY_ENGINE == 'jruby'</td>
+        </tr>
+        <tr class="top-aligned-row context-row">
+          <td class="context-item-name">CHARACTER_MODE</td>
+          <td>=</td>
+          <td class="context-item-value">&quot;Win32API&quot;</td>
+        </tr>
+        <tr class="top-aligned-row context-row">
+          <td class="context-item-name">CHARACTER_MODE</td>
+          <td>=</td>
+          <td class="context-item-value">&quot;termios&quot;</td>
+        </tr>
+        <tr class="top-aligned-row context-row">
+          <td class="context-item-name">CHARACTER_MODE</td>
+          <td>=</td>
+          <td class="context-item-value">&quot;ncurses&quot;</td>
+          <td width="3em">&nbsp;</td>
+          <td class="context-item-desc">
+work correctly in JRuby manually installing the ffi-ncurses gem is the only
+way to get highline to operate correctly in JRuby. The ncurses library is
+only present on unix platforms so this is not a solution for using highline
+in JRuby on windows.
+
+</td>
+        </tr>
+        <tr class="top-aligned-row context-row">
+          <td class="context-item-name">CHARACTER_MODE</td>
+          <td>=</td>
+          <td class="context-item-value">&quot;stty&quot;</td>
+        </tr>
+        </table>
+      </div>
+    </div>
+
+
+
+      
+
+
+    <!-- if method_list -->
+    <div id="methods">
+      <h3 class="section-bar">Public Instance methods</h3>
+
+      <div id="method-M000001" class="method-detail">
+        <a name="M000001"></a>
+
+        <div class="method-heading">
+          <a href="#M000001" class="method-signature">
+          <span class="method-name">get_character</span><span class="method-args">( input = STDIN )</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+          <p>
+Windows savvy getc().
+</p>
+<p>
+<b>WARNING</b>: This method ignores <tt>input</tt> and reads one character
+from <tt>STDIN</tt>!
+</p>
+          <p><a class="source-toggle" href="#"
+            onclick="toggleCode('M000001-source');return false;">[Source]</a></p>
+          <div class="method-source-code" id="M000001-source">
+<pre>
+<span class="ruby-comment cmt"># File lib/rink/input.rb, line 29</span>
+      <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">get_character</span>( <span class="ruby-identifier">input</span> = <span class="ruby-constant">STDIN</span> )
+        <span class="ruby-constant">Win32API</span>.<span class="ruby-identifier">new</span>(<span class="ruby-value str">&quot;crtdll&quot;</span>, <span class="ruby-value str">&quot;_getch&quot;</span>, [ ], <span class="ruby-value str">&quot;L&quot;</span>).<span class="ruby-constant">Call</span>
+      <span class="ruby-keyword kw">end</span>
+</pre>
+          </div>
+        </div>
+      </div>
+
+      <div id="method-M000004" class="method-detail">
+        <a name="M000004"></a>
+
+        <div class="method-heading">
+          <a href="#M000004" class="method-signature">
+          <span class="method-name">get_character</span><span class="method-args">( input = STDIN )</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+          <p>
+ncurses savvy getc(). (JRuby choice.)
+</p>
+          <p><a class="source-toggle" href="#"
+            onclick="toggleCode('M000004-source');return false;">[Source]</a></p>
+          <div class="method-source-code" id="M000004-source">
+<pre>
+<span class="ruby-comment cmt"># File lib/rink/input.rb, line 92</span>
+          <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">get_character</span>( <span class="ruby-identifier">input</span> = <span class="ruby-constant">STDIN</span> )
+            <span class="ruby-constant">FFI</span><span class="ruby-operator">::</span><span class="ruby-constant">NCurses</span>.<span class="ruby-identifier">initscr</span>
+            <span class="ruby-constant">FFI</span><span class="ruby-operator">::</span><span class="ruby-constant">NCurses</span>.<span class="ruby-identifier">cbreak</span>
+            <span class="ruby-keyword kw">begin</span>
+              <span class="ruby-constant">FFI</span><span class="ruby-operator">::</span><span class="ruby-constant">NCurses</span>.<span class="ruby-identifier">curs_set</span> <span class="ruby-value">0</span>
+              <span class="ruby-identifier">input</span>.<span class="ruby-identifier">getbyte</span>
+            <span class="ruby-keyword kw">ensure</span>
+              <span class="ruby-constant">FFI</span><span class="ruby-operator">::</span><span class="ruby-constant">NCurses</span>.<span class="ruby-identifier">endwin</span>
+            <span class="ruby-keyword kw">end</span>
+          <span class="ruby-keyword kw">end</span>
+</pre>
+          </div>
+        </div>
+      </div>
+
+      <div id="method-M000003" class="method-detail">
+        <a name="M000003"></a>
+
+        <div class="method-heading">
+          <a href="#M000003" class="method-signature">
+          <span class="method-name">get_character</span><span class="method-args">( input = STDIN )</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+          <p>
+Unix savvy getc(). (First choice.)
+</p>
+<p>
+<b>WARNING</b>: This method requires the &quot;termios&quot; library!
+</p>
+          <p><a class="source-toggle" href="#"
+            onclick="toggleCode('M000003-source');return false;">[Source]</a></p>
+          <div class="method-source-code" id="M000003-source">
+<pre>
+<span class="ruby-comment cmt"># File lib/rink/input.rb, line 64</span>
+        <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">get_character</span>( <span class="ruby-identifier">input</span> = <span class="ruby-constant">STDIN</span> )
+          <span class="ruby-identifier">old_settings</span> = <span class="ruby-constant">Termios</span>.<span class="ruby-identifier">getattr</span>(<span class="ruby-identifier">input</span>)
+
+          <span class="ruby-identifier">new_settings</span> = <span class="ruby-identifier">old_settings</span>.<span class="ruby-identifier">dup</span>
+          <span class="ruby-identifier">new_settings</span>.<span class="ruby-identifier">c_lflag</span> <span class="ruby-operator">&amp;=</span> <span class="ruby-operator">~</span>(<span class="ruby-constant">Termios</span><span class="ruby-operator">::</span><span class="ruby-constant">ECHO</span> <span class="ruby-operator">|</span> <span class="ruby-constant">Termios</span><span class="ruby-operator">::</span><span class="ruby-constant">ICANON</span>)
+          <span class="ruby-identifier">new_settings</span>.<span class="ruby-identifier">c_cc</span>[<span class="ruby-constant">Termios</span><span class="ruby-operator">::</span><span class="ruby-constant">VMIN</span>] = <span class="ruby-value">1</span>
+
+          <span class="ruby-keyword kw">begin</span>
+            <span class="ruby-constant">Termios</span>.<span class="ruby-identifier">setattr</span>(<span class="ruby-identifier">input</span>, <span class="ruby-constant">Termios</span><span class="ruby-operator">::</span><span class="ruby-constant">TCSANOW</span>, <span class="ruby-identifier">new_settings</span>)
+            <span class="ruby-identifier">input</span>.<span class="ruby-identifier">getbyte</span>
+          <span class="ruby-keyword kw">ensure</span>
+            <span class="ruby-constant">Termios</span>.<span class="ruby-identifier">setattr</span>(<span class="ruby-identifier">input</span>, <span class="ruby-constant">Termios</span><span class="ruby-operator">::</span><span class="ruby-constant">TCSANOW</span>, <span class="ruby-identifier">old_settings</span>)
+          <span class="ruby-keyword kw">end</span>
+        <span class="ruby-keyword kw">end</span>
+</pre>
+          </div>
+        </div>
+      </div>
+
+      <div id="method-M000005" class="method-detail">
+        <a name="M000005"></a>
+
+        <div class="method-heading">
+          <a href="#M000005" class="method-signature">
+          <span class="method-name">get_character</span><span class="method-args">( input = STDIN )</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+          <p>
+Unix savvy getc(). (Second choice.)
+</p>
+<p>
+<b>WARNING</b>: This method requires the external &quot;stty&quot; program!
+</p>
+          <p><a class="source-toggle" href="#"
+            onclick="toggleCode('M000005-source');return false;">[Source]</a></p>
+          <div class="method-source-code" id="M000005-source">
+<pre>
+<span class="ruby-comment cmt"># File lib/rink/input.rb, line 118</span>
+          <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">get_character</span>( <span class="ruby-identifier">input</span> = <span class="ruby-constant">STDIN</span> )
+            <span class="ruby-identifier">raw_no_echo_mode</span>
+
+            <span class="ruby-keyword kw">begin</span>
+              <span class="ruby-identifier">input</span>.<span class="ruby-identifier">getbyte</span>
+            <span class="ruby-keyword kw">ensure</span>
+              <span class="ruby-identifier">restore_mode</span>
+            <span class="ruby-keyword kw">end</span>
+          <span class="ruby-keyword kw">end</span>
+</pre>
+          </div>
+        </div>
+      </div>
+
+      <div id="method-M000006" class="method-detail">
+        <a name="M000006"></a>
+
+        <div class="method-heading">
+          <a href="#M000006" class="method-signature">
+          <span class="method-name">raw_no_echo_mode</span><span class="method-args">()</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+          <p>
+Switched the input mode to raw and disables echo.
+</p>
+<p>
+<b>WARNING</b>: This method requires the external &quot;stty&quot; program!
+</p>
+          <p><a class="source-toggle" href="#"
+            onclick="toggleCode('M000006-source');return false;">[Source]</a></p>
+          <div class="method-source-code" id="M000006-source">
+<pre>
+<span class="ruby-comment cmt"># File lib/rink/input.rb, line 133</span>
+          <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">raw_no_echo_mode</span>
+            <span class="ruby-ivar">@state</span> = <span class="ruby-value">`stty -g`</span>
+            <span class="ruby-identifier">system</span> <span class="ruby-value str">&quot;stty raw -echo -icanon isig&quot;</span>
+          <span class="ruby-keyword kw">end</span>
+</pre>
+          </div>
+        </div>
+      </div>
+
+      <div id="method-M000007" class="method-detail">
+        <a name="M000007"></a>
+
+        <div class="method-heading">
+          <a href="#M000007" class="method-signature">
+          <span class="method-name">restore_mode</span><span class="method-args">()</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+          <p>
+Restores a previously saved input mode.
+</p>
+<p>
+<b>WARNING</b>: This method requires the external &quot;stty&quot; program!
+</p>
+          <p><a class="source-toggle" href="#"
+            onclick="toggleCode('M000007-source');return false;">[Source]</a></p>
+          <div class="method-source-code" id="M000007-source">
+<pre>
+<span class="ruby-comment cmt"># File lib/rink/input.rb, line 143</span>
+          <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">restore_mode</span>
+            <span class="ruby-identifier">system</span> <span class="ruby-node">&quot;stty #{@state}&quot;</span>
+          <span class="ruby-keyword kw">end</span>
+</pre>
+          </div>
+        </div>
+      </div>
+
+      <div id="method-M000002" class="method-detail">
+        <a name="M000002"></a>
+
+        <div class="method-heading">
+          <a href="#M000002" class="method-signature">
+          <span class="method-name">terminal_size</span><span class="method-args">()</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+          <p>
+A Windows savvy method to fetch the console columns, and rows.
+</p>
+          <p><a class="source-toggle" href="#"
+            onclick="toggleCode('M000002-source');return false;">[Source]</a></p>
+          <div class="method-source-code" id="M000002-source">
+<pre>
+<span class="ruby-comment cmt"># File lib/rink/input.rb, line 34</span>
+      <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">terminal_size</span>
+        <span class="ruby-identifier">m_GetStdHandle</span> = <span class="ruby-constant">Win32API</span>.<span class="ruby-identifier">new</span>( <span class="ruby-value str">'kernel32'</span>,
+                                                     <span class="ruby-value str">'GetStdHandle'</span>,
+                                                     [<span class="ruby-value str">'L'</span>],
+                                                     <span class="ruby-value str">'L'</span> )
+        <span class="ruby-identifier">m_GetConsoleScreenBufferInfo</span> = <span class="ruby-constant">Win32API</span>.<span class="ruby-identifier">new</span>(
+          <span class="ruby-value str">'kernel32'</span>, <span class="ruby-value str">'GetConsoleScreenBufferInfo'</span>, [<span class="ruby-value str">'L'</span>, <span class="ruby-value str">'P'</span>], <span class="ruby-value str">'L'</span>
+        )
+
+        <span class="ruby-identifier">format</span> = <span class="ruby-value str">'SSSSSssssSS'</span>
+        <span class="ruby-identifier">buf</span> = ([<span class="ruby-value">0</span>] <span class="ruby-operator">*</span> <span class="ruby-identifier">format</span>.<span class="ruby-identifier">size</span>).<span class="ruby-identifier">pack</span>(<span class="ruby-identifier">format</span>)
+        <span class="ruby-identifier">stdout_handle</span> = <span class="ruby-identifier">m_GetStdHandle</span>.<span class="ruby-identifier">call</span>(<span class="ruby-value">0x</span><span class="ruby-constant">FFFFFFF5</span>)
+
+        <span class="ruby-identifier">m_GetConsoleScreenBufferInfo</span>.<span class="ruby-identifier">call</span>(<span class="ruby-identifier">stdout_handle</span>, <span class="ruby-identifier">buf</span>)
+        <span class="ruby-identifier">bufx</span>, <span class="ruby-identifier">bufy</span>, <span class="ruby-identifier">curx</span>, <span class="ruby-identifier">cury</span>, <span class="ruby-identifier">wattr</span>,
+        <span class="ruby-identifier">left</span>, <span class="ruby-identifier">top</span>, <span class="ruby-identifier">right</span>, <span class="ruby-identifier">bottom</span>, <span class="ruby-identifier">maxx</span>, <span class="ruby-identifier">maxy</span> = <span class="ruby-identifier">buf</span>.<span class="ruby-identifier">unpack</span>(<span class="ruby-identifier">format</span>)
+        <span class="ruby-keyword kw">return</span> <span class="ruby-identifier">right</span> <span class="ruby-operator">-</span> <span class="ruby-identifier">left</span> <span class="ruby-operator">+</span> <span class="ruby-value">1</span>, <span class="ruby-identifier">bottom</span> <span class="ruby-operator">-</span> <span class="ruby-identifier">top</span> <span class="ruby-operator">+</span> <span class="ruby-value">1</span>
+      <span class="ruby-keyword kw">end</span>
+</pre>
+          </div>
+        </div>
+      </div>
+
+      <div id="method-M000008" class="method-detail">
+        <a name="M000008"></a>
+
+        <div class="method-heading">
+          <a href="#M000008" class="method-signature">
+          <span class="method-name">terminal_size</span><span class="method-args">()</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+          <p>
+A ncurses savvy method to fetch the console columns, and rows.
+</p>
+          <p><a class="source-toggle" href="#"
+            onclick="toggleCode('M000008-source');return false;">[Source]</a></p>
+          <div class="method-source-code" id="M000008-source">
+<pre>
+<span class="ruby-comment cmt"># File lib/rink/input.rb, line 152</span>
+        <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">terminal_size</span>
+          <span class="ruby-identifier">size</span> = [<span class="ruby-value">80</span>, <span class="ruby-value">40</span>]
+          <span class="ruby-constant">FFI</span><span class="ruby-operator">::</span><span class="ruby-constant">NCurses</span>.<span class="ruby-identifier">initscr</span>
+          <span class="ruby-keyword kw">begin</span>
+            <span class="ruby-identifier">size</span> = <span class="ruby-constant">FFI</span><span class="ruby-operator">::</span><span class="ruby-constant">NCurses</span>.<span class="ruby-identifier">getmaxyx</span>(<span class="ruby-identifier">stdscr</span>).<span class="ruby-identifier">reverse</span>
+          <span class="ruby-keyword kw">ensure</span>
+            <span class="ruby-constant">FFI</span><span class="ruby-operator">::</span><span class="ruby-constant">NCurses</span>.<span class="ruby-identifier">endwin</span>
+          <span class="ruby-keyword kw">end</span>
+          <span class="ruby-identifier">size</span>
+        <span class="ruby-keyword kw">end</span>
+</pre>
+          </div>
+        </div>
+      </div>
+
+      <div id="method-M000009" class="method-detail">
+        <a name="M000009"></a>
+
+        <div class="method-heading">
+          <a href="#M000009" class="method-signature">
+          <span class="method-name">terminal_size</span><span class="method-args">()</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+          <p>
+A Unix savvy method using stty that to fetch the console columns, and rows.
+&#8230; stty does not work in JRuby
+</p>
+          <p><a class="source-toggle" href="#"
+            onclick="toggleCode('M000009-source');return false;">[Source]</a></p>
+          <div class="method-source-code" id="M000009-source">
+<pre>
+<span class="ruby-comment cmt"># File lib/rink/input.rb, line 165</span>
+        <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">terminal_size</span>
+          <span class="ruby-keyword kw">if</span> <span class="ruby-regexp re">/solaris/</span> <span class="ruby-operator">=~</span> <span class="ruby-constant">RUBY_PLATFORM</span> <span class="ruby-keyword kw">and</span>
+            <span class="ruby-value">`stty`</span> <span class="ruby-operator">=~</span> <span class="ruby-regexp re">/\brows = (\d+).*\bcolumns = (\d+)/</span>
+            [<span class="ruby-identifier">$2</span>, <span class="ruby-identifier">$1</span>].<span class="ruby-identifier">map</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">c</span><span class="ruby-operator">|</span> <span class="ruby-identifier">x</span>.<span class="ruby-identifier">to_i</span> }
+          <span class="ruby-keyword kw">else</span>
+            <span class="ruby-value">`stty size`</span>.<span class="ruby-identifier">split</span>.<span class="ruby-identifier">map</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">x</span><span class="ruby-operator">|</span> <span class="ruby-identifier">x</span>.<span class="ruby-identifier">to_i</span> }.<span class="ruby-identifier">reverse</span>
+          <span class="ruby-keyword kw">end</span>
+        <span class="ruby-keyword kw">end</span>
+</pre>
+          </div>
+        </div>
+      </div>
+
+
+    </div>
+
+
+  </div>
+
+
+<div id="validator-badges">
+  <p><small><a href="http://validator.w3.org/check/referer">[Validate]</a></small></p>
+</div>
+
+</body>
+</html>
