@@ -308,7 +308,7 @@ module Rink
     # Runs the autocomplete method from the line processor, then reformats its result to be an array.
     def autocomplete(line)
       return [] unless @line_processor
-      result = @line_processor.autocomplete(line, namespace.ns)
+      result = @line_processor.autocomplete(line, namespace)
       case result
         when String
           [result]
