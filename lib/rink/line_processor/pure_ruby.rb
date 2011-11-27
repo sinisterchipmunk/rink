@@ -158,7 +158,7 @@ module Rink
             # unknown(maybe String)
             autocomplete_for_string(Regexp.quote($1))
           else
-            candidates = eval("methods | private_methods | local_variables | self.class.constants", namespace.send(:binding))
+            candidates = namespace.instance_eval { methods | private_methods | local_variables | self.class.constants }
             (candidates|RESERVED_WORDS).grep(/^#{Regexp.quote(line)}/)
         end
         result.kind_of?(Array) ? 
