@@ -1,12 +1,5 @@
 require 'rubygems'
 require 'tmpdir'
 
-$LOAD_PATH.unshift(File.dirname(__FILE__))
-$LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 require 'rink'
-require 'spec'
-require 'spec/autorun'
-
-Spec::Runner.configure do |config|
-  
-end
+require 'rspec'

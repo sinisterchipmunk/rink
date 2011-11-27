@@ -1,3 +1,5 @@
+require 'spec_helper'
+
 describe Object do
   context "#instance_exec" do
     class Dummy
