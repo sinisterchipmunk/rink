@@ -1,17 +1,16 @@
 # -*- encoding: utf-8 -*-
 
+require File.expand_path("lib/rink/version", File.dirname(__FILE__))
+
 Gem::Specification.new do |s|
   s.name = %q{rink}
-  s.version = "1.0.1"
+  s.version = Rink::Version::STRING
 
   s.authors = ["Colin MacKenzie IV"]
   s.date = %q{2010-08-07}
   s.description = %q{Makes interactive consoles awesome.}
   s.email = %q{sinisterchipmunk@gmail.com}
-  s.extra_rdoc_files = [
-    "LICENSE",
-     "README.rdoc"
-  ]
+  s.extra_rdoc_files = [ "LICENSE", "README.rdoc" ]
   s.homepage = %q{http://www.thoughtsincomputation.com}
   s.summary = %q{Makes interactive consoles awesome.}
 
