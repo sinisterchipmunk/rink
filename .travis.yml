@@ -11,3 +11,4 @@ rvm:
   - ruby-head
   - rbx-2.0
 
+env: "WITHOUT_RCOV=1 "

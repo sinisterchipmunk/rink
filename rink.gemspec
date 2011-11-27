@@ -21,7 +21,7 @@ Gem::Specification.new do |s|
   s.require_paths = ["lib"]
 
   s.add_development_dependency 'rspec', "~> 2.6.0"
-  s.add_development_dependency 'rcov', '~> 0.9.11'
+  s.add_development_dependency 'rcov', '~> 0.9.11' unless ENV['WITHOUT_RCOV']
   s.add_development_dependency 'rake', '~> 0.9.2'
 end
 
