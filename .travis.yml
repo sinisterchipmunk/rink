@@ -1,0 +1,13 @@
+# Passes arguments to bundle install (http://gembundler.com/man/bundle-install.1.html)
+# bundler_args: --binstubs
+
+# Specify which versions of Ruby to run the tests on; each version will be used
+rvm:
+  - 1.8.7
+  - 1.9.2
+  - 1.9.3
+  - ree
+  - jruby
+  - ruby-head
+  - rbx-2.0
+
