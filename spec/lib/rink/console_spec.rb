@@ -128,4 +128,14 @@ describe Rink::Console do
   it "should allow lazily presetting namespace" do
     console("self", :namespace => proc { ExampleObject.new }).should be_kind_of(ExampleObject)
   end
+
+  it "should be aware of commands defined in a superclass" do
+    class TestClassA < Rink::Console
+      command :foo do
+      end
+    end
+    class TestClassB < TestClassA
+    end
+    TestClassB.commands['foo'].should_not be_nil
+  end
 end
