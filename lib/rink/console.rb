@@ -157,9 +157,14 @@ module Rink
       
       # Returns a hash containing all registered commands.
       def commands
-        @commands ||= {}
+        @commands ||=
+          if superclass.respond_to? :commands
+            superclass.commands.clone
+          else
+            {}
+          end
       end
-      
+
       # Default options are:
       #  :processor => Rink::LineProcessor::PureRuby.new(self),
       #  :output => STDOUT,
